@@ -7,7 +7,7 @@ pipeline {
     stages {
         stage('Checkout Github') {
             steps {
-                echo 'Checking out code from GitHub...'
+                echo 'Checking out the code from GitHub...'
 		        checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'github-token', url: 'https://github.com/data-guru0/TESTING-9.git']])
             }
         }        
