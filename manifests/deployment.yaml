@@ -17,3 +17,5 @@ spec:
         image: dataguru97/gitops-testing:latest
         ports:
         - containerPort: 5000
+      imagePullSecrets:
+      - name: dockerhub-secret
