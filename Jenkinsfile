@@ -2,7 +2,7 @@ pipeline {
     agent any
     environment {
 		DOCKER_HUB_REPO = 'dataguru97/testing-9'
-		DOCKER_HUB_CREDENTIALS_ID = 'gitops-dockerhub'
+		DOCKER_HUB_CREDENTIALS_ID = 'gitops-dockerhub-token'
     }
     stages {
         stage('Checkout Github') {
