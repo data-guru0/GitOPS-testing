@@ -1,14 +1,14 @@
 pipeline {
     agent any
     environment {
-		DOCKER_HUB_REPO = 'dataguru97/gitops-testing'
-		DOCKER_HUB_CREDENTIALS_ID = 'gitops-dockerhub-token'
+		DOCKER_HUB_REPO = 'dataguru97/testing-9'
+		DOCKER_HUB_CREDENTIALS_ID = 'gitops-dockerhub'
     }
     stages {
         stage('Checkout Github') {
             steps {
                 echo 'Checking out code from GitHub...'
-		        checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'github-token', url: 'https://github.com/data-guru0/GitOPS-testing.git']])
+		        checkout scmGit(branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[credentialsId: 'github-token', url: 'https://github.com/data-guru0/TESTING-9.git']])
             }
         }        
         stage('Build Docker Image') {
@@ -21,7 +21,7 @@ pipeline {
         }
         stage('Push Image to DockerHub') {
             steps {
-                 script {
+                script {
 					echo 'pushing docker image to DockerHub...'
 					docker.withRegistry('https://registry.hub.docker.com', "${DOCKER_HUB_CREDENTIALS_ID}"){
 						dockerImage.push('latest')
@@ -31,14 +31,26 @@ pipeline {
         }
         stage('Install Kubectl & ArgoCD CLI') {
             steps {
-                echo 'Installing Kubectl and ArgoCD CLI...'
+                sh '''
+				echo 'installing Kubectl & ArgoCD cli...'
+				curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+				chmod +x kubectl
+				mv kubectl /usr/local/bin/kubectl
+				curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+				chmod +x /usr/local/bin/argocd
+				'''
             }
         }
         stage('Apply Kubernetes & Sync App with ArgoCD') {
             steps {
-                echo 'Applying Kubernetes and syncing with ArgoCD...'
+                script{
+                    kubeconfig(credentialsId: 'kubeconfig', serverUrl: ' https://192.168.49.2:8443') {
+                        sh '''
+                        argocd login 34.72.5.170:31704 --username admin --password $(kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d) --insecure
+                        '''
+                        }
+                }
             }
         }
     }
 }
-
